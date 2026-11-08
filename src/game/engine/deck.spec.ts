@@ -37,4 +37,15 @@ describe('createDeck', () => {
     expect(black.filter((card) => card.value === 'wild')).toHaveLength(4);
     expect(black.filter((card) => card.value === 'wild4')).toHaveLength(4);
   });
+
+  it('baraja con el rng que recibe', () => {
+    let calls = 0;
+
+    createDeck(() => {
+      calls++;
+      return 0;
+    });
+
+    expect(calls).toBe(107);
+  });
 });

@@ -6,10 +6,11 @@ import {
   CardValue,
   NUMBER_VALUES,
 } from '../types/card.types';
+import { cryptoRng, Rng, shuffle } from './random';
 
 const ACTIONS: ActionValue[] = ['skip', 'reverse', 'draw2'];
 
-export function createDeck(): Card[] {
+export function createDeck(rng: Rng = cryptoRng): Card[] {
   const deck: Card[] = [];
   let nextId = 0;
 
@@ -34,5 +35,5 @@ export function createDeck(): Card[] {
     add('black', 'wild4');
   }
 
-  return deck;
+  return shuffle(deck, rng);
 }
