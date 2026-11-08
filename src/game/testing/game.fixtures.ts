@@ -48,5 +48,8 @@ export function playingGame(options: GameOptions = {}): GameState {
     pending: 0,
     drawnCardId: null,
     log: [],
+    round: 1,
+    dealer: 2,
+    winner: null,
   };
 }

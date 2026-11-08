@@ -18,6 +18,11 @@ export interface PlayerState {
   vulnerable: boolean;
 }
 
+export interface RoundWinner {
+  playerId: string;
+  points: number;
+}
+
 export interface GameState {
   status: GameStatus;
   hostId: string | null;
@@ -32,4 +37,7 @@ export interface GameState {
   pending: number;
   drawnCardId: string | null;
   log: string[];
+  round: number;
+  dealer: number;
+  winner: RoundWinner | null;
 }

@@ -156,3 +156,48 @@ describe('playCard', () => {
     expect(state.turn).toBe(1);
   });
 });
+
+describe('playCard y ¡Última!', () => {
+  it('al quedar con una carta sin cantar, lo pueden atrapar', () => {
+    const red1 = card('red', '1');
+    const state = playingGame({ hands: [[red1, card('blue', '9')]] });
+
+    playCard(state, 'p0', red1.id);
+
+    expect(state.players[0].vulnerable).toBe(true);
+  });
+
+  it('si cantó antes de jugar, no lo pueden atrapar', () => {
+    const red1 = card('red', '1');
+    const state = playingGame({ hands: [[red1, card('blue', '9')]] });
+    state.players[0].declared = true;
+
+    playCard(state, 'p0', red1.id);
+
+    expect(state.players[0].vulnerable).toBe(false);
+  });
+
+  it('jugar cierra la ventana para atrapar a otros', () => {
+    const red1 = card('red', '1');
+    const state = playingGame({ hands: [[red1, ...filler(2)]] });
+    state.players[2].vulnerable = true;
+
+    playCard(state, 'p0', red1.id);
+
+    expect(state.players[2].vulnerable).toBe(false);
+  });
+
+  it('la última carta gana la ronda y su efecto ya no se aplica', () => {
+    const plus2 = card('red', 'draw2');
+    const state = playingGame({
+      hands: [[plus2], [card('red', '3')], [card('green', '5')]],
+    });
+
+    playCard(state, 'p0', plus2.id);
+
+    expect(state.status).toBe('roundover');
+    expect(state.winner).toEqual({ playerId: 'p0', points: 8 });
+    expect(state.pending).toBe(0);
+    expect(state.log.at(-1)).toBe('Ana se quedó sin cartas y gana 8 puntos');
+  });
+});

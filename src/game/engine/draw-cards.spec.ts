@@ -30,3 +30,17 @@ describe('drawCards', () => {
     expect(state.players[0].hand).toHaveLength(0);
   });
 });
+
+describe('drawCards y ¡Última!', () => {
+  it('al tener más de una carta, se reinicia el ¡Última!', () => {
+    const state = playingGame({ hands: [[card('red', '1')]] });
+    const ana = state.players[0];
+    ana.declared = true;
+    ana.vulnerable = true;
+
+    drawCards(state, ana, 1, zeroRng);
+
+    expect(ana.declared).toBe(false);
+    expect(ana.vulnerable).toBe(false);
+  });
+});

@@ -10,7 +10,9 @@ import {
   requireTurn,
   stepIndex,
   topCard,
+  clearVulnerable,
 } from './rules';
+import { endRound } from './round';
 
 export function playCard(
   state: GameState,
@@ -32,12 +34,21 @@ export function playCard(
   }
   const color = colorAfter(card, chosenColor);
 
+  clearVulnerable(state);
   player.hand.splice(index, 1);
   state.discard.push(card);
   state.color = color;
   state.drawnCardId = null;
 
+  if (player.hand.length === 1) player.vulnerable = !player.declared;
+
   let message = `${player.name} jugó ${describeCard(card, color)}`;
+
+  if (player.hand.length === 0) {
+    pushLog(state, message);
+    endRound(state, player);
+    return;
+  }
 
   // Con dos jugadores, Reversa funciona como Salta: vuelves a tirar.
   switch (card.value) {
@@ -100,6 +111,8 @@ export function drawCard(
   if (state.drawnCardId !== null) {
     throw new GameRuleError('Ya robaste: juega esa carta o pasa.');
   }
+
+  clearVulnerable(state);
 
   if (state.pending > 0) {
     const given = drawCards(state, player, state.pending, rng).length;

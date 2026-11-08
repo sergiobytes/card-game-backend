@@ -1,9 +1,18 @@
 import { COLOR_NAMES, LOG_LIMIT } from '../constants';
-import { Card, CardColor } from '../types/card.types';
+import { Card, CardColor, NUMBER_VALUES } from '../types/card.types';
 import { GameState, PlayerState } from '../types/game-state.types';
 import { GameRuleError } from './game-rule.error';
 
 export const isWild = (card: Card): boolean => card.color === 'black';
+
+export function isNumberCard(card: Card): card is Card & { color: CardColor } {
+  return (NUMBER_VALUES as readonly string[]).includes(card.value);
+}
+
+export function cardPoints(card: Card): number {
+  if (isNumberCard(card)) return Number(card.value);
+  return isWild(card) ? 50 : 20;
+}
 
 export function topCard(state: GameState): Card {
   const top = state.discard.at(-1);
@@ -26,6 +35,13 @@ export function canPlay(state: GameState, card: Card): boolean {
   return isWild(card) || card.color === state.color || card.value === top.value;
 }
 
+export function findPlayer(
+  state: GameState,
+  playerId: string,
+): PlayerState | undefined {
+  return state.players.find((p) => p.id === playerId);
+}
+
 export function currentPlayer(state: GameState): PlayerState {
   return state.players[state.turn];
 }
@@ -44,6 +60,20 @@ export function requireTurn(state: GameState, playerId: string): PlayerState {
     throw new GameRuleError('Espera tu turno.');
   }
   return player;
+}
+
+export function requireHost(
+  state: GameState,
+  playerId: string,
+  action: string,
+): void {
+  if (state.hostId !== playerId) {
+    throw new GameRuleError(`Solo quien creó la sala puede ${action}.`);
+  }
+}
+
+export function clearVulnerable(state: GameState): void {
+  for (const p of state.players) p.vulnerable = false;
 }
 
 export function pushLog(state: GameState, message: string): void {

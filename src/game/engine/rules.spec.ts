@@ -2,8 +2,11 @@ import { card, playingGame } from '../testing/game.fixtures';
 import { GameRuleError } from './game-rule.error';
 import {
   canPlay,
+  cardPoints,
   describeCard,
+  isNumberCard,
   pushLog,
+  requireHost,
   requireTurn,
   stepIndex,
   topCard,
@@ -147,6 +150,36 @@ describe('describeCard', () => {
     );
     expect(describeCard(card('black', 'wild4'), 'red')).toBe(
       'Comodín +4 (eligió rojo)',
+    );
+  });
+});
+
+describe('cardPoints', () => {
+  it('los números valen lo que dicen, las acciones 20 y los comodines 50', () => {
+    expect(cardPoints(card('red', '0'))).toBe(0);
+    expect(cardPoints(card('red', '7'))).toBe(7);
+    expect(cardPoints(card('blue', 'skip'))).toBe(20);
+    expect(cardPoints(card('green', 'draw2'))).toBe(20);
+    expect(cardPoints(card('black', 'wild'))).toBe(50);
+    expect(cardPoints(card('black', 'wild4'))).toBe(50);
+  });
+});
+
+describe('isNumberCard', () => {
+  it('distingue números de acciones y comodines', () => {
+    expect(isNumberCard(card('red', '0'))).toBe(true);
+    expect(isNumberCard(card('red', 'skip'))).toBe(false);
+    expect(isNumberCard(card('black', 'wild'))).toBe(false);
+  });
+});
+
+describe('requireHost', () => {
+  it('solo deja pasar al anfitrión', () => {
+    const state = playingGame();
+
+    expect(() => requireHost(state, 'p0', 'repartir')).not.toThrow();
+    expect(() => requireHost(state, 'p1', 'repartir')).toThrow(
+      'Solo quien creó la sala puede repartir.',
     );
   });
 });

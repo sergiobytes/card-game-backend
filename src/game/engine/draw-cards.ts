@@ -22,6 +22,11 @@ export function drawCards(
     player.hand.push(card);
     drawn.push(card);
   }
+
+  if (player.hand.length > 1) {
+    player.declared = false;
+    player.vulnerable = false;
+  }
   return drawn;
 }
 

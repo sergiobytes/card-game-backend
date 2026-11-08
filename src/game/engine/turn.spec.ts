@@ -79,3 +79,14 @@ describe('passTurn', () => {
     expect(state.log.at(-1)).toBe('Ana pasó');
   });
 });
+
+describe('drawCard y ¡Última!', () => {
+  it('robar cierra la ventana para atrapar a otros', () => {
+    const state = playingGame();
+    state.players[2].vulnerable = true;
+
+    drawCard(state, 'p0');
+
+    expect(state.players[2].vulnerable).toBe(false);
+  });
+});
