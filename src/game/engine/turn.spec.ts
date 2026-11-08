@@ -1,5 +1,5 @@
 import { card, playingGame } from '../testing/game.fixtures';
-import { drawCard, passTurn } from './turn';
+import { drawCard, passTurn, skipTurn } from './turn';
 
 describe('drawCard', () => {
   it('si la carta robada no sirve, pasa el turno solo', () => {
@@ -88,5 +88,46 @@ describe('drawCard y ¡Última!', () => {
     drawCard(state, 'p0');
 
     expect(state.players[2].vulnerable).toBe(false);
+  });
+});
+
+describe('skipTurn', () => {
+  it('salta a quien está desconectado y le cobra el castigo pendiente', () => {
+    const state = playingGame();
+    state.pending = 2;
+
+    skipTurn(state, 'p1', 'p0', ['p1', 'p2']);
+
+    expect(state.turn).toBe(1);
+    expect(state.pending).toBe(0);
+    expect(state.players[0].hand).toHaveLength(5);
+    expect(state.log.at(-1)).toBe('Se saltó el turno de Ana (desconectado)');
+  });
+
+  it('no salta a quien sigue conectado', () => {
+    expect(() => skipTurn(playingGame(), 'p1', 'p0', ['p0', 'p1'])).toThrow(
+      'Ana sigue conectado.',
+    );
+  });
+
+  it('si el turno ya avanzó, no hace nada', () => {
+    const state = playingGame({ turn: 1 });
+
+    skipTurn(state, 'p2', 'p0', []);
+
+    expect(state.turn).toBe(1);
+    expect(state.log).toEqual([]);
+  });
+
+  it('solo quien juega la ronda puede saltar turnos', () => {
+    const state = playingGame();
+
+    expect(() => skipTurn(state, 'nadie', 'p0', [])).toThrow(
+      'Solo quien juega la ronda puede saltar turnos.',
+    );
+    state.status = 'roundover';
+    expect(() => skipTurn(state, 'p1', 'p0', [])).toThrow(
+      'La ronda no está en curso.',
+    );
   });
 });

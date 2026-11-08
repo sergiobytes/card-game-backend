@@ -4,6 +4,7 @@ import {
   canPlay,
   cardPoints,
   describeCard,
+  findMember,
   isNumberCard,
   pushLog,
   requireHost,
@@ -181,5 +182,16 @@ describe('requireHost', () => {
     expect(() => requireHost(state, 'p1', 'repartir')).toThrow(
       'Solo quien creó la sala puede repartir.',
     );
+  });
+});
+
+describe('findMember', () => {
+  it('encuentra a quien juega y a quien espera la próxima ronda', () => {
+    const state = playingGame();
+    state.waiting = [{ ...state.players[2], id: 'w1', name: 'Dani' }];
+
+    expect(findMember(state, 'p1')?.name).toBe('Beto');
+    expect(findMember(state, 'w1')?.name).toBe('Dani');
+    expect(findMember(state, 'nadie')).toBeUndefined();
   });
 });

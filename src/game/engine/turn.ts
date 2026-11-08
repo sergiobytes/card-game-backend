@@ -11,6 +11,8 @@ import {
   stepIndex,
   topCard,
   clearVulnerable,
+  currentPlayer,
+  findPlayer,
 } from './rules';
 import { endRound } from './round';
 
@@ -42,7 +44,7 @@ export function playCard(
 
   if (player.hand.length === 1) player.vulnerable = !player.declared;
 
-  let message = `${player.name} jugó ${describeCard(card, color)}`;
+  const message = `${player.name} jugó ${describeCard(card, color)}`;
 
   if (player.hand.length === 0) {
     pushLog(state, message);
@@ -50,40 +52,45 @@ export function playCard(
     return;
   }
 
+  pushLog(state, message + applyCardEffect(state, card, rng));
+}
+
+/**
+ * Aplica el efecto de la carta recién jugada y avanza el turno.
+ * Devuelve el texto que se añade al mensaje del registro.
+ */
+function applyCardEffect(state: GameState, card: Card, rng: Rng): string {
   // Con dos jugadores, Reversa funciona como Salta: vuelves a tirar.
   switch (card.value) {
     case 'skip': {
       const skipped = state.players[stepIndex(state)];
       state.turn = stepIndex(state, 2);
-      message += ` y saltó a ${skipped.name}`;
-      break;
+      return ` y saltó a ${skipped.name}`;
     }
     case 'reverse':
       state.direction = state.direction === 1 ? -1 : 1;
       if (state.players.length > 2) state.turn = stepIndex(state);
-      message += ' y cambió el sentido';
-      break;
+      return ' y cambió el sentido';
     case 'draw2':
-    case 'wild4': {
-      const amount = card.value === 'draw2' ? 2 : 4;
-      if (state.rules.stack) {
-        state.pending += amount;
-        state.turn = stepIndex(state);
-        if (state.pending > amount) {
-          message += ` (van +${state.pending} acumuladas)`;
-        }
-      } else {
-        const victim = state.players[stepIndex(state)];
-        drawCards(state, victim, amount, rng);
-        state.turn = stepIndex(state, 2);
-        message += `: ${victim.name} roba ${amount} y pierde el turno`;
-      }
-      break;
-    }
+      return applyDrawPenalty(state, 2, rng);
+    case 'wild4':
+      return applyDrawPenalty(state, 4, rng);
     default:
       state.turn = stepIndex(state);
+      return '';
   }
-  pushLog(state, message);
+}
+
+function applyDrawPenalty(state: GameState, amount: number, rng: Rng): string {
+  if (state.rules.stack) {
+    state.pending += amount;
+    state.turn = stepIndex(state);
+    return state.pending > amount ? ` (van +${state.pending} acumuladas)` : '';
+  }
+  const victim = state.players[stepIndex(state)];
+  drawCards(state, victim, amount, rng);
+  state.turn = stepIndex(state, 2);
+  return `: ${victim.name} roba ${amount} y pierde el turno`;
 }
 
 // El color llega por la red: aunque el tipo diga CardColor, hay que revisarlo.
@@ -156,4 +163,36 @@ export function passTurn(state: GameState, playerId: string): void {
   state.drawnCardId = null;
   state.turn = stepIndex(state);
   pushLog(state, `${player.name} pasó`);
+}
+
+/**
+ * Salta el turno de alguien desconectado para que la mesa no se quede
+ * esperando. Si tenía un castigo acumulado, lo roba.
+ */
+export function skipTurn(
+  state: GameState,
+  playerId: string,
+  targetId: string,
+  onlineIds: readonly string[],
+  rng: Rng = cryptoRng,
+): void {
+  if (state.status !== 'playing') {
+    throw new GameRuleError('La ronda no está en curso.');
+  }
+  if (!findPlayer(state, playerId)) {
+    throw new GameRuleError('Solo quien juega la ronda puede saltar turnos.');
+  }
+  const target = currentPlayer(state);
+  if (target.id !== targetId) return; // el turno ya avanzó
+  if (onlineIds.includes(targetId)) {
+    throw new GameRuleError(`${target.name} sigue conectado.`);
+  }
+
+  if (state.pending > 0) {
+    drawCards(state, target, state.pending, rng);
+    state.pending = 0;
+  }
+  state.drawnCardId = null;
+  state.turn = stepIndex(state);
+  pushLog(state, `Se saltó el turno de ${target.name} (desconectado)`);
 }

@@ -42,6 +42,15 @@ export function findPlayer(
   return state.players.find((p) => p.id === playerId);
 }
 
+export function findMember(
+  state: GameState,
+  playerId: string,
+): PlayerState | undefined {
+  return (
+    findPlayer(state, playerId) ?? state.waiting.find((p) => p.id === playerId)
+  );
+}
+
 export function currentPlayer(state: GameState): PlayerState {
   return state.players[state.turn];
 }
