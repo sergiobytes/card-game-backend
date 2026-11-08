@@ -1,5 +1,5 @@
-import { LOG_LIMIT } from '../constants';
-import { Card } from '../types/card.types';
+import { COLOR_NAMES, LOG_LIMIT } from '../constants';
+import { Card, CardColor } from '../types/card.types';
 import { GameState, PlayerState } from '../types/game-state.types';
 import { GameRuleError } from './game-rule.error';
 
@@ -49,4 +49,22 @@ export function requireTurn(state: GameState, playerId: string): PlayerState {
 export function pushLog(state: GameState, message: string): void {
   state.log.push(message);
   if (state.log.length > LOG_LIMIT) state.log.shift();
+}
+
+export function describeCard(card: Card, color: CardColor): string {
+  const colorName = COLOR_NAMES[color];
+  switch (card.value) {
+    case 'wild':
+      return `Comodín (eligió ${colorName})`;
+    case 'wild4':
+      return `Comodín +4 (eligió ${colorName})`;
+    case 'skip':
+      return `Salta ${colorName}`;
+    case 'reverse':
+      return `Reversa ${colorName}`;
+    case 'draw2':
+      return `+2 ${colorName}`;
+    default:
+      return `${card.value} ${colorName}`;
+  }
 }

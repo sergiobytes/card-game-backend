@@ -1,6 +1,13 @@
 import { card, playingGame } from '../testing/game.fixtures';
 import { GameRuleError } from './game-rule.error';
-import { canPlay, pushLog, requireTurn, stepIndex, topCard } from './rules';
+import {
+  canPlay,
+  describeCard,
+  pushLog,
+  requireTurn,
+  stepIndex,
+  topCard,
+} from './rules';
 
 describe('topCard', () => {
   it('es la última carta del descarte', () => {
@@ -117,5 +124,22 @@ describe('pushLog', () => {
     for (let i = 0; i < 8; i++) pushLog(state, `m${i}`);
 
     expect(state.log).toEqual(['m2', 'm3', 'm4', 'm5', 'm6', 'm7']);
+  });
+});
+
+describe('describeCard', () => {
+  it('nombra cada tipo de carta en español', () => {
+    expect(describeCard(card('red', '7'), 'red')).toBe('7 rojo');
+    expect(describeCard(card('blue', 'skip'), 'blue')).toBe('Salta azul');
+    expect(describeCard(card('green', 'reverse'), 'green')).toBe(
+      'Reversa verde',
+    );
+    expect(describeCard(card('yellow', 'draw2'), 'yellow')).toBe('+2 amarillo');
+    expect(describeCard(card('black', 'wild'), 'blue')).toBe(
+      'Comodín (eligió azul)',
+    );
+    expect(describeCard(card('black', 'wild4'), 'red')).toBe(
+      'Comodín +4 (eligió rojo)',
+    );
   });
 });
