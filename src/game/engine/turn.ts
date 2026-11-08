@@ -21,6 +21,8 @@ export function playCard(
 ): void {
   const player = requireTurn(state, playerId);
   const index = player.hand.findIndex((c) => c.id === cardId);
+
+  // Validar todo antes de modificar el estado.
   if (index < 0) {
     throw new GameRuleError('Esa carta ya no está en tu mano.');
   }
@@ -36,6 +38,8 @@ export function playCard(
   state.drawnCardId = null;
 
   let message = `${player.name} jugó ${describeCard(card, color)}`;
+
+  // Con dos jugadores, Reversa funciona como Salta: vuelves a tirar.
   switch (card.value) {
     case 'skip': {
       const skipped = state.players[stepIndex(state)];
@@ -71,6 +75,7 @@ export function playCard(
   pushLog(state, message);
 }
 
+// El color llega por la red: aunque el tipo diga CardColor, hay que revisarlo.
 function colorAfter(card: Card, chosen?: CardColor): CardColor {
   if (card.color !== 'black') return card.color;
   if (!chosen || !CARD_COLORS.includes(chosen)) {

@@ -17,6 +17,13 @@ describe('topCard', () => {
 
     expect(topCard(state)).toBe(last);
   });
+
+  it('falla si no hay cartas en la mesa', () => {
+    const state = playingGame();
+    state.discard = [];
+
+    expect(() => topCard(state)).toThrow('La pila de descarte está vacía.');
+  });
 });
 
 describe('canPlay', () => {
