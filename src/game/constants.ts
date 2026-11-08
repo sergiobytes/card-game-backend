@@ -12,3 +12,6 @@ export const COLOR_NAMES: Record<CardColor, string> = {
   red: 'rojo',
   yellow: 'amarillo',
 };
+
+/** Largo máximo del nombre de un jugador. */
+export const NAME_MAX_LENGTH = 16;

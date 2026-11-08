@@ -69,6 +69,23 @@ describe('RoomsService', () => {
     expect(repository.exists(code)).toBe(false);
   });
 
+  it('marca conexiones y arma la vista de cada jugador', () => {
+    const { room, playerId } = service.create('Ana');
+
+    service.connect(room, playerId, 's1');
+    expect(service.viewFor(room, playerId).players[0].online).toBe(true);
+    expect(service.memberIds(room)).toEqual([playerId]);
+    expect(service.roomCount()).toBe(1);
+
+    expect(service.disconnect(room.code, playerId, 's1')).toBe(room);
+    expect(service.viewFor(room, playerId).players[0].online).toBe(false);
+    expect(service.isOpen(room)).toBe(true);
+  });
+
+  it('ignora desconexiones de salas que ya no existen', () => {
+    expect(service.disconnect('ZZZZ', 'p1', 's1')).toBeNull();
+  });
+
   it('cada cierto tiempo limpia las salas inactivas', () => {
     jest.useFakeTimers();
     const sweep = jest

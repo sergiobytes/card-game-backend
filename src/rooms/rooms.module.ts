@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { cryptoRng } from '../game/engine/random';
 import { RNG } from './rooms.constants';
+import { RoomsGateway } from './rooms.gateway';
 import { RoomsRepository } from './rooms.repository';
 import { RoomsService } from './rooms.service';
 import { CatchPlayerUseCase } from './usecases/catch-player.usecase';
@@ -23,6 +24,7 @@ import { UpdateRulesUseCase } from './usecases/update-rules.usecase';
     { provide: RNG, useValue: cryptoRng },
     RoomsRepository,
     RoomsService,
+    RoomsGateway,
     CreateRoomUseCase,
     JoinRoomUseCase,
     RejoinRoomUseCase,
@@ -38,6 +40,6 @@ import { UpdateRulesUseCase } from './usecases/update-rules.usecase';
     SkipTurnUseCase,
     RemoveIdleRoomsUseCase,
   ],
-  exports: [RoomsService, RoomsRepository],
+  exports: [RoomsService],
 })
 export class RoomsModule {}
