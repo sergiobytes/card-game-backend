@@ -27,8 +27,10 @@ export function drawCard(
   let given = 0;
   while (drawCards(state, player, 1, rng) > 0) {
     given++;
-    last = player.hand[player.hand.length - 1];
-    if (!state.rules.drawUntilPlayable || canPlay(state, last)) break;
+    const drawn = player.hand.at(-1);
+    if (!drawn) break;
+    last = drawn;
+    if (!state.rules.drawUntilPlayable || canPlay(state, drawn)) break;
   }
 
   if (!last) {

@@ -1,11 +1,14 @@
 import { LOG_LIMIT } from '../constants';
+import { Card } from '../types/card.types';
 import { GameState, PlayerState } from '../types/game-state.types';
 import { GameRuleError } from './game-rule.error';
 
 export const isWild = (card: Card): boolean => card.color === 'black';
 
 export function topCard(state: GameState): Card {
-  return state.discard[state.discard.length - 1];
+  const top = state.discard.at(-1);
+  if (!top) throw new Error('La pila de descarte está vacía.');
+  return top;
 }
 
 export function canPlay(state: GameState, card: Card): boolean {
