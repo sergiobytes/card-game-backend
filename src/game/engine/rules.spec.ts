@@ -1,5 +1,6 @@
 import { card, playingGame } from '../testing/game.fixtures';
-import { canPlay, topCard } from './rules';
+import { GameRuleError } from './game-rule.error';
+import { canPlay, pushLog, requireTurn, stepIndex, topCard } from './rules';
 
 describe('topCard', () => {
   it('es la última carta del descarte', () => {
@@ -77,5 +78,44 @@ describe('canPlay', () => {
     state.drawnCardId = 'robada';
 
     expect(canPlay(state, card('blue', '1', 'robada'))).toBe(false);
+  });
+});
+
+describe('stepIndex', () => {
+  it('da la vuelta a la mesa en ambos sentidos', () => {
+    const state = playingGame({ turn: 2 });
+
+    expect(stepIndex(state)).toBe(0);
+    expect(stepIndex(state, 2)).toBe(1);
+
+    state.turn = 0;
+    state.direction = -1;
+    expect(stepIndex(state)).toBe(2);
+  });
+});
+
+describe('requireTurn', () => {
+  it('devuelve al jugador en turno y rechaza a los demás', () => {
+    const state = playingGame({ turn: 1 });
+
+    expect(requireTurn(state, 'p1').name).toBe('Beto');
+    expect(() => requireTurn(state, 'p0')).toThrow('Espera tu turno.');
+  });
+
+  it('rechaza jugar si la ronda no está en curso', () => {
+    const state = playingGame();
+    state.status = 'roundover';
+
+    expect(() => requireTurn(state, 'p0')).toThrow(GameRuleError);
+  });
+});
+
+describe('pushLog', () => {
+  it('conserva solo los últimos 6 mensajes', () => {
+    const state = playingGame();
+
+    for (let i = 0; i < 8; i++) pushLog(state, `m${i}`);
+
+    expect(state.log).toEqual(['m2', 'm3', 'm4', 'm5', 'm6', 'm7']);
   });
 });

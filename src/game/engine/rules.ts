@@ -1,5 +1,6 @@
-import { Card } from '../types/card.types';
-import { GameState } from '../types/game-state.types';
+import { LOG_LIMIT } from '../constants';
+import { GameState, PlayerState } from '../types/game-state.types';
+import { GameRuleError } from './game-rule.error';
 
 export const isWild = (card: Card): boolean => card.color === 'black';
 
@@ -20,4 +21,29 @@ export function canPlay(state: GameState, card: Card): boolean {
   if (state.drawnCardId !== null && card.id !== state.drawnCardId) return false;
 
   return isWild(card) || card.color === state.color || card.value === top.value;
+}
+
+export function currentPlayer(state: GameState): PlayerState {
+  return state.players[state.turn];
+}
+
+export function stepIndex(state: GameState, steps = 1): number {
+  const n = state.players.length;
+  return (((state.turn + state.direction * steps) % n) + n) % n;
+}
+
+export function requireTurn(state: GameState, playerId: string): PlayerState {
+  if (state.status !== 'playing') {
+    throw new GameRuleError('La ronda no está en curso.');
+  }
+  const player = currentPlayer(state);
+  if (player.id !== playerId) {
+    throw new GameRuleError('Espera tu turno.');
+  }
+  return player;
+}
+
+export function pushLog(state: GameState, message: string): void {
+  state.log.push(message);
+  if (state.log.length > LOG_LIMIT) state.log.shift();
 }
