@@ -8,7 +8,7 @@ describe('drawCards', () => {
     const state = playingGame({ deck: [a, b], hands: [[]] });
     const ana = state.players[0];
 
-    expect(drawCards(state, ana, 2, zeroRng)).toBe(2);
+    expect(drawCards(state, ana, 2, zeroRng)).toEqual([b, a]);
     expect(ana.hand).toEqual([b, a]);
     expect(state.deck).toHaveLength(0);
   });
@@ -18,7 +18,7 @@ describe('drawCards', () => {
     const state = playingGame({ deck: [], top, hands: [[]] });
     state.discard = [card('green', '1'), card('green', '2'), top];
 
-    expect(drawCards(state, state.players[0], 2, zeroRng)).toBe(2);
+    expect(drawCards(state, state.players[0], 2, zeroRng)).toHaveLength(2);
     expect(state.discard).toEqual([top]);
     expect(state.log).toContain('Se volvió a barajar el mazo');
   });
@@ -26,7 +26,7 @@ describe('drawCards', () => {
   it('se detiene si ya no quedan cartas en ningún lado', () => {
     const state = playingGame({ deck: [], hands: [[]] });
 
-    expect(drawCards(state, state.players[0], 3, zeroRng)).toBe(0);
+    expect(drawCards(state, state.players[0], 3, zeroRng)).toEqual([]);
     expect(state.players[0].hand).toHaveLength(0);
   });
 });

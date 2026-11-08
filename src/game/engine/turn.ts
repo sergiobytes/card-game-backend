@@ -102,7 +102,7 @@ export function drawCard(
   }
 
   if (state.pending > 0) {
-    const given = drawCards(state, player, state.pending, rng);
+    const given = drawCards(state, player, state.pending, rng).length;
     state.pending = 0;
     state.turn = stepIndex(state);
     pushLog(state, `${player.name} robó ${given} y pierde el turno`);
@@ -111,10 +111,10 @@ export function drawCard(
 
   let last: Card | undefined;
   let given = 0;
-  while (drawCards(state, player, 1, rng) > 0) {
+  for (;;) {
+    const [drawn] = drawCards(state, player, 1, rng);
+    if (!drawn) break; // ya no quedan cartas
     given++;
-    const drawn = player.hand.at(-1);
-    if (!drawn) break;
     last = drawn;
     if (!state.rules.drawUntilPlayable || canPlay(state, drawn)) break;
   }
